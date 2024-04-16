@@ -3,6 +3,10 @@ const passport = require("passport");
 var router = express.Router();
 const userController = require("../controllers/userController");
 const authenticateJWT = passport.authenticate("jwt", { session: false });
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+const config = require("../config");
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
