@@ -6,7 +6,8 @@ exports.postLoginUser = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    const user = await User.findOne({ username }).populate("role_id");
+    const user = await User.findOne({ username })
+    // .populate("role_id");
 
     if (!user) {
       return res.status(401).json({
@@ -40,44 +41,44 @@ exports.postLoginUser = async (req, res, next) => {
 exports.postAddUser = async (req, res, next) => {
   try {
     // Check if there is an image file uploaded
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No image uploaded." });
-    }
+    // if (!req.file) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "No image uploaded." });
+    // }
 
     // Get the Cloudinary image URL
-    const imageUrl = req.file.path;
+    // const imageUrl = req.file.path;
 
     // Check if username already exists
-    const existingUsername = await User.findOne({
-      username: req.body.username,
-    });
-    const existingEmail = await User.findOne({ email: req.body.email });
-    const existingPhone = await User.findOne({ phone: req.body.phone });
-    if (existingUsername && existingEmail) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Username and email đã tồn tại." });
-    }
-    if (existingUsername) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Username đã tồn tại." });
-    }
+    // const existingUsername = await User.findOne({
+    //   username: req.body.username,
+    // });
+    // const existingEmail = await User.findOne({ email: req.body.email });
+    // const existingPhone = await User.findOne({ phone: req.body.phone });
+    // if (existingUsername && existingEmail) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Username and email đã tồn tại." });
+    // }
+    // if (existingUsername) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Username đã tồn tại." });
+    // }
 
     // Check if email already exists
 
-    if (existingEmail) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email đã tồn tại." });
-    }
-    if (existingPhone) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Phone đã tồn tại." });
-    }
+    // if (existingEmail) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Email đã tồn tại." });
+    // }
+    // if (existingPhone) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Phone đã tồn tại." });
+    // }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -86,14 +87,14 @@ exports.postAddUser = async (req, res, next) => {
     const user = await User.create({
       username: req.body.username,
       password: hashedPassword,
-      email: req.body.email,
-      image: imageUrl,
-      gender: req.body.gender,
-      address: req.body.address,
-      fullName: req.body.fullName,
-      status: req.body.status,
-      phone: req.body.phone,
-      role_id: req.body.role_id,
+      // email: req.body.email,
+      // image: imageUrl,
+      // gender: req.body.gender,
+      // address: req.body.address,
+      // fullName: req.body.fullName,
+      // status: req.body.status,
+      // phone: req.body.phone,
+      // role_id: req.body.role_id,
     });
 
     // Return success response
@@ -103,5 +104,21 @@ exports.postAddUser = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.fetchMe = async (req, res, next) => {
+  const userId = req.decoded._id;
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    res.status(200).json({ success: true, user: user });
+  } catch (err) {
+    console.error("Error finding user:", err);
+    res.status(500).json({ success: false, message: "Internal server error." });
   }
 };

@@ -1,6 +1,7 @@
 var express = require('express');
 const passport = require("passport");
 var router = express.Router();
+const { verifyToken } = require("../authenticate");
 const userController = require("../controllers/userController");
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 const multer = require("multer");
@@ -20,5 +21,6 @@ const upload = multer({ storage: storage });
 
 router.post("/login", userController.postLoginUser);
 router.post("/register", upload.single("image"), userController.postAddUser);
+router.get("/fetchMe", verifyToken, userController.fetchMe);
 
 module.exports = router;
