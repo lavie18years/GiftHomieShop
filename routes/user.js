@@ -9,6 +9,12 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const config = require("../config");
 
+cloudinary.config({
+  cloud_name: config.CLOUDINARY_CLOUD_NAME,
+  api_key: config.CLOUDINARY_API_KEY,
+  api_secret: config.CLOUDINARY_API_SECRET,
+});
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -25,10 +31,6 @@ router.get("/fetchMe", verifyToken, userController.fetchMe);
 router.get("/userid/:userid", userController.getUserById);
 router.get("/username/:userName", userController.getUserByUsername);
 router.get("/role/:role", userController.getUserByRole);
-router.put(
-  "/update-user/:userId",
-  authenticateJWT,
-  userController.updateUserByID
-);
-router.get("/", authenticateJWT, userController.getAllUser);
+router.put("/update-user/:userId", userController.updateUserByID);
+router.get("/", userController.getAllUser);
 module.exports = router;
