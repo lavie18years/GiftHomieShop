@@ -8,11 +8,11 @@ const shipperSchema = new Schema({
   },
   store_id: {
     type: Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "Store",
     required: true,
   },
   phone: {
-    type: Number,
+    type: String,
     required: true,
   },
   timestamp: {
