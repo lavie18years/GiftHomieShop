@@ -12,6 +12,11 @@ const orderSchema = new Schema({
     ref: "Product",
     required: true,
   },
+  store_id: {
+    type: Schema.Types.ObjectId,
+    ref: "Store",
+    required: true,
+  },
   quantity: {
     type: Number,
     required: true,
