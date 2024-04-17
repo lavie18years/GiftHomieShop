@@ -16,10 +16,6 @@ const feedbackSchema = new Schema({
     type: String,
     required: true,
   },
-  rating: {
-    type: Number,
-    required: true,
-  },
   timestamp: {
     type: Date,
     default: Date.now,
