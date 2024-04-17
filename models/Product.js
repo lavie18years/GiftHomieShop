@@ -11,6 +11,10 @@ const productSchema = new Schema({
     ref: "Category",
     required: true,
   },
+  image: {
+    type: Array,
+    required: true,
+  },
   description: {
     type: String,
     required: true,
