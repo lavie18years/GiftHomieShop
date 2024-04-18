@@ -34,8 +34,8 @@ exports.createOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/success",
-        cancel_url: "http://localhost:3000/cancel",
+        return_url: "http://localhost:3000/order/responseSucessPayPal",
+        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
       },
       transactions: [
         {
@@ -77,44 +77,39 @@ exports.createOrder = async (req, res) => {
 
 exports.responseSucessPayPal = async (req, res) => {
   try {
-    // Lấy thông tin giao dịch từ query parameters
-    const { paymentId, payerID } = req.query;
+    const { paymentId, PayerID } = req.query;
 
-    // Lấy thông tin chi tiết về giao dịch từ PayPal
-    paypal.payment.execute(paymentId, { payer_id: payerID }, async (error, payment) => {
-      if (error) {
-        throw error;
-      } else {
-        // Xác định đơn hàng tương ứng với giao dịch
-        const order = await Order.findOne({
-          user_id: payment.payer.payer_info.email, // Sử dụng email của người thanh toán làm điều kiện tìm kiếm
-          totalPrice: payment.transactions[0].amount.total, // Sử dụng tổng giá trị của giao dịch làm điều kiện tìm kiếm
-          status: "false" // Chỉ xem xét các đơn hàng chưa được xác nhận
-          // Các điều kiện tìm kiếm khác nếu cần
-        });
-
-        if (!order) {
-          // Nếu không tìm thấy đơn hàng tương ứng, xử lý lỗi hoặc trả về thông báo không tìm thấy
-          res.status(404).json({ error: "Order not found" });
+    paypal.payment.execute(
+      paymentId,
+      { payer_id: PayerID },
+      async (error, payment) => {
+        if (error) {
+          console.error("Error executing PayPal payment:", error);
+          return res.status(500).json({ error: "Error processing payment" });
         } else {
-          // Cập nhật trạng thái của đơn hàng thành hoàn thành
-          order.status = "completed";
-          await order.save();
+          const orderID = payment.transactions[0].item_list.items[0].sku;
 
-          // Hiển thị thông báo cho người dùng
-          res.send("Payment successful!");
+          const order = await Order.findOneAndUpdate(
+            { order_id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
+            { status: "true" }, // Cập nhật trạng thái đơn hàng thành completed
+            { new: true } // Trả về đối tượng đã được cập nhật
+          );
 
-          // Hoặc chuyển hướng người dùng đến trang cảm ơn
-          // res.redirect('/thank-you');
+          if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+          } else {
+            // Nếu đơn hàng được tìm thấy và cập nhật thành công, chuyển hướng hoặc trả về thông báo thành công
+            // res.redirect('/thank-you');
+            return res.status(200).send("Payment successful!");
+          }
         }
       }
-    });
+    );
   } catch (error) {
     console.error("Error processing PayPal payment:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 exports.responseCancelPayPal = (req, res) => {
   // Xử lý hủy bỏ thanh toán

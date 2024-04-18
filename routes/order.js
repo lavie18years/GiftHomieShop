@@ -9,12 +9,12 @@ router.post("/createOrder",
 // authenticateJWT, 
 orderController.createOrder);
 
-// router.get("/responseSucessPayPal", 
-// // authenticateJWT, 
-// orderController.responseSucessPayPal);
+router.get("/responseSucessPayPal", 
+// authenticateJWT, 
+orderController.responseSucessPayPal);
 
-// router.get("/responseCancelPayPal", 
-// // authenticateJWT, 
-// orderController.responseCancelPayPal);
+router.get("/responseCancelPayPal", 
+// authenticateJWT, 
+orderController.responseCancelPayPal);
 
 module.exports = router;
