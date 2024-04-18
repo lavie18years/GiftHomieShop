@@ -15,6 +15,7 @@ exports.createOrder = async (req, res) => {
   const { user_id, product_id, store_id, quantity, totalPrice } = req.body;
 
   // Tạo một đơn hàng mới trong cơ sở dữ liệu
+  console.log(req.body);
   const newOrder = new Order({
     user_id,
     product_id,
@@ -58,15 +59,26 @@ exports.createOrder = async (req, res) => {
         },
       ],
     };
+    // paypal.payment.create(create_payment_json, function (error, payment) {
+    //   if (error) {
+    //     throw error;
+    //   } else {
+    //     for (let i = 0; i < payment.links.length; i++) {
+    //       if (payment.links[i].rel === "approval_url") {
+    //         res.redirect(payment.links[i].href);
+    //       }
+    //     }
+    //   }
+    // });
     paypal.payment.create(create_payment_json, function (error, payment) {
       if (error) {
-        throw error;
+        console.error(error);
+        res.status(500).json({ error: "Failed to create PayPal payment" });
       } else {
-        for (let i = 0; i < payment.links.length; i++) {
-          if (payment.links[i].rel === "approval_url") {
-            res.redirect(payment.links[i].href);
-          }
-        }
+        const approvalUrl = payment.links.find(
+          (link) => link.rel === "approval_url"
+        ).href;
+        res.json({ url: approvalUrl });
       }
     });
   } catch (error) {
@@ -81,40 +93,43 @@ exports.responseSucessPayPal = async (req, res) => {
     const { paymentId, payerID } = req.query;
 
     // Lấy thông tin chi tiết về giao dịch từ PayPal
-    paypal.payment.execute(paymentId, { payer_id: payerID }, async (error, payment) => {
-      if (error) {
-        throw error;
-      } else {
-        // Xác định đơn hàng tương ứng với giao dịch
-        const order = await Order.findOne({
-          user_id: payment.payer.payer_info.email, // Sử dụng email của người thanh toán làm điều kiện tìm kiếm
-          totalPrice: payment.transactions[0].amount.total, // Sử dụng tổng giá trị của giao dịch làm điều kiện tìm kiếm
-          status: "false" // Chỉ xem xét các đơn hàng chưa được xác nhận
-          // Các điều kiện tìm kiếm khác nếu cần
-        });
-
-        if (!order) {
-          // Nếu không tìm thấy đơn hàng tương ứng, xử lý lỗi hoặc trả về thông báo không tìm thấy
-          res.status(404).json({ error: "Order not found" });
+    paypal.payment.execute(
+      paymentId,
+      { payer_id: payerID },
+      async (error, payment) => {
+        if (error) {
+          throw error;
         } else {
-          // Cập nhật trạng thái của đơn hàng thành hoàn thành
-          order.status = "completed";
-          await order.save();
+          // Xác định đơn hàng tương ứng với giao dịch
+          const order = await Order.findOne({
+            user_id: payment.payer.payer_info.email, // Sử dụng email của người thanh toán làm điều kiện tìm kiếm
+            totalPrice: payment.transactions[0].amount.total, // Sử dụng tổng giá trị của giao dịch làm điều kiện tìm kiếm
+            status: "false", // Chỉ xem xét các đơn hàng chưa được xác nhận
+            // Các điều kiện tìm kiếm khác nếu cần
+          });
 
-          // Hiển thị thông báo cho người dùng
-          res.send("Payment successful!");
+          if (!order) {
+            // Nếu không tìm thấy đơn hàng tương ứng, xử lý lỗi hoặc trả về thông báo không tìm thấy
+            res.status(404).json({ error: "Order not found" });
+          } else {
+            // Cập nhật trạng thái của đơn hàng thành hoàn thành
+            order.status = "completed";
+            await order.save();
 
-          // Hoặc chuyển hướng người dùng đến trang cảm ơn
-          // res.redirect('/thank-you');
+            // Hiển thị thông báo cho người dùng
+            res.send("Payment successful!");
+
+            // Hoặc chuyển hướng người dùng đến trang cảm ơn
+            // res.redirect('/thank-you');
+          }
         }
       }
-    });
+    );
   } catch (error) {
     console.error("Error processing PayPal payment:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 exports.responseCancelPayPal = (req, res) => {
   // Xử lý hủy bỏ thanh toán
