@@ -21,9 +21,9 @@ router.get("/responseCancelPayPal",
 // authenticateJWT, 
 orderController.responseCancelPayPal);
 
-// router.post("/addToCart", 
-// // authenticateJWT, 
-// orderController.addToCart);
+router.post("/addToCart", 
+// authenticateJWT, 
+orderController.addToCart);
 
 
 module.exports = router;

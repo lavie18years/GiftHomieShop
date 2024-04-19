@@ -6,12 +6,12 @@ exports.addFeedback = async (req, res) => {
     const { user_id, product_id, content, rating } = req.body;
 
     // Kiểm tra xem người dùng có đơn hàng nào của sản phẩm không
-    const order = await Order.findOne({ user_id, product_id, status: "true" });
-    if (!order) {
-      return res
-        .status(400)
-        .json({ error: "Bạn cần mua sản phẩm này trước khi bình luận." });
-    }
+    // const order = await Order.findOne({ user_id, product_id, status: "true" });
+    // if (!order) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Bạn cần mua sản phẩm này trước khi bình luận." });
+    // }
 
     // Tạo bình luận mới
     const newFeedback = new Feedback({ user_id, product_id, content, rating });
@@ -57,12 +57,20 @@ exports.getFeedback = async (req, res) => {
   try {
     const productId = req.params.productId;
 
-    // Truy vấn MongoDB để lấy feedback dựa trên productID
-    const feedbacks = await Feedback.find({ product_id: productId });
+    const feedbacks = await Feedback.find({ product_id: productId }).populate('user_id');
 
-    // Trả về feedbacks nếu có
-    if (feedbacks.length > 0) {
-      res.json({ success: true, feedbacks: feedbacks });
+    const feedbacksWithUserName = feedbacks.map(feedback => {
+      return {
+        content: feedback.content,
+        rating: feedback.rating,
+        timestamp: feedback.timestamp,
+        updateTime: feedback.updateTime,
+        userName: feedback.user_id.username
+      };
+    });
+
+    if (feedbacksWithUserName.length > 0) {
+      res.json({ success: true, feedbacks: feedbacksWithUserName });
     } else {
       res.json({
         success: false,
