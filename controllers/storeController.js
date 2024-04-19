@@ -105,7 +105,7 @@ exports.getStoreByLocation = (req, res, next) => {
 exports.getLocationStore = async (req, res) => {
   try {
     const distinctProvinces = await Store.distinct("province");
-    const provincesAndDistricts = [];
+    const provincesAndDistricts = []; 
 
     for (const province of distinctProvinces) {
       const districts = await Store.distinct("district", { province: province });

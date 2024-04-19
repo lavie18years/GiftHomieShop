@@ -3,7 +3,7 @@ const Feedback = require("../models/Feedback");
 
 exports.addFeedback = async (req, res) => {
   try {
-    const { user_id, product_id, content } = req.body;
+    const { user_id, product_id, content, rating } = req.body;
 
     // Kiểm tra xem người dùng có đơn hàng nào của sản phẩm không
     const order = await Order.findOne({ user_id, product_id, status: "true" });
@@ -14,7 +14,7 @@ exports.addFeedback = async (req, res) => {
     }
 
     // Tạo bình luận mới
-    const newFeedback = new Feedback({ user_id, product_id, content });
+    const newFeedback = new Feedback({ user_id, product_id, content, rating });
     const savedFeedback = await newFeedback.save();
 
     res.status(201).json({
@@ -50,5 +50,29 @@ exports.updateFeedback = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getFeedback = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+
+    // Truy vấn MongoDB để lấy feedback dựa trên productID
+    const feedbacks = await Feedback.find({ product_id: productId });
+
+    // Trả về feedbacks nếu có
+    if (feedbacks.length > 0) {
+      res.json({ success: true, feedbacks: feedbacks });
+    } else {
+      res.json({
+        success: false,
+        message: "Không có feedback cho sản phẩm này.",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ success: false, message: "Đã xảy ra lỗi khi lấy feedback." });
   }
 };

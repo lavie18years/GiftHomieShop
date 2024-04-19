@@ -24,13 +24,17 @@ exports.checkQuantityProductInStore = async (req, res) => {
     const stores = await Store.find({ province, district });
 
     if (stores.length === 0) {
-      return res.status(404).json({ error: "Không tìm thấy cửa hàng ở địa chỉ này." });
+      return res
+        .status(404)
+        .json({ error: "Không tìm thấy cửa hàng ở địa chỉ này." });
     }
 
     // Lặp qua các cửa hàng để kiểm tra số lượng sản phẩm
     const result = [];
     for (const store of stores) {
-      const productsInStore = await ProductInStore.find({ store_id: store._id });
+      const productsInStore = await ProductInStore.find({
+        store_id: store._id,
+      });
 
       if (productsInStore.length === 0) {
         result.push({
@@ -72,4 +76,50 @@ exports.checkQuantityProductInStore = async (req, res) => {
   }
 };
 
+exports.getListStoreHaveProduct = async (req, res) => {
+  try {
+    const productId = req.params.productId;
 
+    // Truy vấn MongoDB để lấy thông tin các cửa hàng có sản phẩm với productID tương ứng và số lượng lớn hơn 0
+    const productStores = await ProductInStore.find({
+      product_id: productId,
+      quantity: { $gt: 0 },
+    });
+
+    // Tạo một mảng chứa thông tin các cửa hàng
+    let storesInfo = [];
+
+    // Duyệt qua từng cửa hàng và lấy thông tin của cửa hàng từ cơ sở dữ liệu
+    for (const productStore of productStores) {
+      const storeInfo = await Store.findById(productStore.store_id);
+      if (storeInfo) {
+        storesInfo.push({
+          storeName: storeInfo.storeName,
+          phone: storeInfo.phone,
+          location: storeInfo.location,
+          province: storeInfo.province,
+          district: storeInfo.district,
+          quantity: productStore.quantity,
+        });
+      }
+    }
+
+    // Trả về thông tin của các cửa hàng nếu có
+    if (storesInfo.length > 0) {
+      res.json({ success: true, stores: storesInfo });
+    } else {
+      res.json({
+        success: false,
+        message: "Không có cửa hàng nào còn hàng cho sản phẩm này.",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Đã xảy ra lỗi khi lấy thông tin cửa hàng.",
+      });
+  }
+};

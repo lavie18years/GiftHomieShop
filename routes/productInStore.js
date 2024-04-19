@@ -13,4 +13,8 @@ router.get("/checkQuantityProductInStore",
 // authenticateJWT, 
 productInStoreController.checkQuantityProductInStore);
 
+router.get("/getListStoreHaveProduct/:productId", 
+// authenticateJWT, 
+productInStoreController.getListStoreHaveProduct);
+
 module.exports = router;

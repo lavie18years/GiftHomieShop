@@ -13,4 +13,8 @@ router.put("/updateFeedback/:feedbackId",
 // authenticateJWT, 
 feedbackController.updateFeedback);
 
+router.get("/getFeedback/:productId", 
+// authenticateJWT, 
+feedbackController.getFeedback);
+
 module.exports = router;
