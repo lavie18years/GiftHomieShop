@@ -94,6 +94,7 @@ exports.getListStoreHaveProduct = async (req, res) => {
       const storeInfo = await Store.findById(productStore.store_id);
       if (storeInfo) {
         storesInfo.push({
+          storeId: storeInfo._id,
           storeName: storeInfo.storeName,
           phone: storeInfo.phone,
           location: storeInfo.location,
@@ -115,11 +116,9 @@ exports.getListStoreHaveProduct = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Đã xảy ra lỗi khi lấy thông tin cửa hàng.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi khi lấy thông tin cửa hàng.",
+    });
   }
 };

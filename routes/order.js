@@ -6,9 +6,15 @@ const router = express.Router();
 // const authenticateJWT = passport.authenticate("jwt", { session: false });
 
 router.post(
-  "/createOrder",
+  "/buyProduct",
   // authenticateJWT,
-  orderController.createOrder
+  orderController.buyProduct
+);
+
+router.post(
+  "/payOrder",
+  // authenticateJWT,
+  orderController.payOrder
 );
 
 router.get(
