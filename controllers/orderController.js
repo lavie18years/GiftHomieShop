@@ -15,7 +15,6 @@ exports.createOrder = async (req, res) => {
   const { user_id, product_id, store_id, quantity, totalPrice } = req.body;
 
   // Tạo một đơn hàng mới trong cơ sở dữ liệu
-  console.log(req.body);
   const newOrder = new Order({
     user_id,
     product_id,

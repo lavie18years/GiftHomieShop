@@ -6,12 +6,12 @@ exports.addFeedback = async (req, res) => {
     const { user_id, product_id, content, rating } = req.body;
 
     // Kiểm tra xem người dùng có đơn hàng nào của sản phẩm không
-    const order = await Order.findOne({ user_id, product_id, status: "true" });
-    if (!order) {
-      return res
-        .status(400)
-        .json({ error: "Bạn cần mua sản phẩm này trước khi bình luận." });
-    }
+    // const order = await Order.findOne({ user_id, product_id, status: "true" });
+    // if (!order) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Bạn cần mua sản phẩm này trước khi bình luận." });
+    // }
 
     // Tạo bình luận mới
     const newFeedback = new Feedback({ user_id, product_id, content, rating });
