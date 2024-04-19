@@ -101,3 +101,20 @@ exports.getStoreByLocation = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
+
+exports.getLocationStore = async (req, res) => {
+  try {
+    const distinctProvinces = await Store.distinct("province");
+    const provincesAndDistricts = [];
+
+    for (const province of distinctProvinces) {
+      const districts = await Store.distinct("district", { province: province });
+      provincesAndDistricts.push({ province, districts });
+    }
+
+    res.json(provincesAndDistricts);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

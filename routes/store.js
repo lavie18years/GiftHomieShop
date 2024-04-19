@@ -10,5 +10,6 @@ router.get("/getStoreByLocation", storeController.getStoreByLocation);
 router.get("/getStoreByID/:storeId", storeController.getStoreByID);
 router.put("/updateStoreByID/:storeId", storeController.updateStoreByID);
 router.delete("/deleteStoreByID/:storeId", storeController.deleteStoreByID);
+router.get("/getLocationStore", storeController.getLocationStore);
 
 module.exports = router;
