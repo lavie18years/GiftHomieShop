@@ -126,3 +126,30 @@ exports.responseCancelPayPal = (req, res) => {
   // Xử lý hủy bỏ thanh toán
   res.send("Payment canceled!");
 };
+
+exports.addToCart = async (req, res) => {
+  try {
+    // Giả sử bạn nhận được dữ liệu từ client gửi lên, chẳng hạn như user_id, product_id, store_id và quantity
+    const { user_id, product_id, store_id, quantity, totalPrice } = req.body;
+
+    // Tạo một đối tượng Order mới
+    const newOrder = new Order({
+      user_id: user_id,
+      product_id: product_id,
+      store_id: store_id,
+      quantity: quantity,
+      totalPrice: totalPrice,
+      status: false, // Trạng thái mặc định là false
+    });
+
+    // Lưu đơn hàng vào cơ sở dữ liệu
+    await newOrder.save();
+
+    res.json({ success: true, message: "Đã tạo đơn hàng thành công." });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ success: false, message: "Đã xảy ra lỗi khi tạo đơn hàng." });
+  }
+};
