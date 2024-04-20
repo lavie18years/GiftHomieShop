@@ -17,7 +17,6 @@ exports.buyProduct = async (req, res) => {
   const totalPrice = quantity * price;
 
   // Tạo một đơn hàng mới trong cơ sở dữ liệu
-  console.log(req.body);
   const newOrder = new Order({
     user_id,
     product_id,
