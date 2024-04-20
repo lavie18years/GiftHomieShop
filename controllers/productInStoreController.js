@@ -115,11 +115,9 @@ exports.getListStoreHaveProduct = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Đã xảy ra lỗi khi lấy thông tin cửa hàng.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi khi lấy thông tin cửa hàng.",
+    });
   }
 };
