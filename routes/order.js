@@ -1,9 +1,9 @@
 const express = require("express");
-// const passport = require("passport");
+const passport = require("passport");
 const orderController = require("../controllers/orderController");
 
 const router = express.Router();
-// const authenticateJWT = passport.authenticate("jwt", { session: false });
+const authenticateJWT = passport.authenticate("jwt", { session: false });
 
 router.post(
   "/buyProduct",
@@ -30,6 +30,10 @@ orderController.responseCancelPayPal);
 router.post("/addToCart", 
 // authenticateJWT, 
 orderController.addToCart);
+
+router.get("/getListOrder/:userId", 
+// authenticateJWT, 
+orderController.getListOrder);
 
 
 module.exports = router;
