@@ -5,19 +5,23 @@ const orderController = require("../controllers/orderController");
 const router = express.Router();
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-router.post("/buyProduct", authenticateJWT, orderController.buyProduct);
+router.post("/buyProduct", 
+// authenticateJWT,
+ orderController.buyProduct);
 
-router.post("/payOrder", authenticateJWT, orderController.payOrder);
+router.post("/payOrder", 
+// authenticateJWT, 
+orderController.payOrder);
 
 router.get(
   "/responseSucessPayPal",
-  authenticateJWT,
+  // authenticateJWT,
   orderController.responseSucessPayPal
 );
 
 router.get(
   "/responseCancelPayPal",
-  authenticateJWT,
+  // authenticateJWT,
   orderController.responseCancelPayPal
 );
 
