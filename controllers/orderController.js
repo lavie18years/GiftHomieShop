@@ -222,3 +222,29 @@ exports.addToCart = async (req, res) => {
       .json({ success: false, message: "Đã xảy ra lỗi khi tạo đơn hàng." });
   }
 };
+
+exports.getListOrder = async (req, res) => {
+  const { userId } = req.params; // Lấy user_id từ params của request
+
+  try {
+    const orders = await Order.find({
+      user_id: userId,
+      status: "false", // Giả sử status được lưu dưới dạng String "false"
+    })
+      .populate("product_id")
+      .populate("store_id"); // Điều này sẽ điền thông tin chi tiết từ các Models liên kết
+
+    if (orders.length === 0) {
+      // Không có orders nào được tìm thấy
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng nào." });
+    }
+
+    // Trả về danh sách các đơn hàng
+    res.json(orders);
+  } catch (error) {
+    // Xử lý các trường hợp có lỗi
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy danh sách đơn hàng", error: error });
+  }
+};
