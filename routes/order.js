@@ -41,4 +41,10 @@ router.delete(
   orderController.deleteOrder
 );
 
+router.get(
+  "/getHistory/:userId",
+  // authenticateJWT,
+  orderController.getHistory
+);
+
 module.exports = router;

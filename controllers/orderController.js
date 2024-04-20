@@ -1,5 +1,8 @@
 const paypal = require("paypal-rest-sdk");
 const Order = require("../models/Order");
+const ProductInStore = require("../models/ProductInStore");
+const Delivery = require("../models/Delivery");
+const Shipper = require("../models/Shipper");
 
 // Configure PayPal SDK with your credentials
 paypal.configure({
@@ -174,8 +177,23 @@ exports.responseSucessPayPal = async (req, res) => {
           if (!order) {
             return res.status(404).json({ error: "Order not found" });
           } else {
-            // Nếu đơn hàng được tìm thấy và cập nhật thành công, chuyển hướng hoặc trả về thông báo thành công
-            // res.redirect('/thank-you');
+            // Nếu đơn hàng được tìm thấy và cập nhật thành công, giảm số lượng sản phẩm trong kho hàng
+            const productInStore = await ProductInStore.findOne({
+              product_id: order.product_id,
+              store_id: order.store_id,
+            });
+
+            if (!productInStore) {
+              return res
+                .status(404)
+                .json({ error: "Product not found in store" });
+            }
+
+            // Giảm số lượng của sản phẩm trong kho hàng
+            productInStore.quantity -= order.quantity;
+            await productInStore.save();
+
+            // Trả về thông báo thành công
             return res.status(200).send("Payment successful!");
           }
         }
@@ -234,11 +252,33 @@ exports.getListOrder = async (req, res) => {
 
     if (orders.length === 0) {
       // Không có orders nào được tìm thấy
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng nào." });
+      return res.json([]);
     }
 
-    // Trả về danh sách các đơn hàng
-    res.json(orders);
+    // Lặp qua mỗi đơn hàng và tính toán số lượng của sản phẩm trong kho hàng
+    const ordersWithQuantity = await Promise.all(
+      orders.map(async (order) => {
+        // Lấy số lượng của sản phẩm trong kho hàng từ product_id và store_id
+        const productInStore = await ProductInStore.findOne({
+          product_id: order.product_id,
+          store_id: order.store_id,
+        }).select("quantity");
+
+        if (!productInStore) {
+          throw new Error(
+            "Không tìm thấy số lượng của sản phẩm trong kho hàng"
+          );
+        }
+
+        return {
+          order: order,
+          productQuantityInStore: productInStore.quantity, // Số lượng của sản phẩm trong kho hàng
+        };
+      })
+    );
+
+    // Trả về danh sách các đơn hàng với số lượng sản phẩm trong kho hàng
+    res.json(ordersWithQuantity);
   } catch (error) {
     // Xử lý các trường hợp có lỗi
     res
@@ -285,5 +325,41 @@ exports.deleteOrder = async (req, res) => {
   } catch (error) {
     console.error("Error deleting order:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getHistory = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Tìm các đơn hàng của userId với status là true
+    const orders = await Order.find({ user_id: userId, status: true });
+
+    // Lặp qua từng đơn hàng và lấy thông tin vận chuyển và người giao hàng
+    const ordersWithDeliveryInfo = await Promise.all(
+      orders.map(async (order) => {
+        // Tìm thông tin vận chuyển của đơn hàng
+        const deliveryInfo = await Delivery.findOne({ order_id: order._id });
+        if (!deliveryInfo) {
+          throw new Error("Không tìm thấy thông tin vận chuyển");
+        }
+
+        // Tìm thông tin người giao hàng
+        const shipperInfo = await Shipper.findById(deliveryInfo.shipper_id);
+        if (!shipperInfo) {
+          throw new Error("Không tìm thấy thông tin người giao hàng");
+        }
+
+        return {
+          order: order,
+          delivery: deliveryInfo,
+          shipper: shipperInfo,
+        };
+      })
+    );
+
+    res.json(ordersWithDeliveryInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

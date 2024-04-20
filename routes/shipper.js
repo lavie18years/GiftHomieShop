@@ -5,7 +5,7 @@ const { verifyToken } = require("../authenticate");
 const shipperController = require("../controllers/shipperController");
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-router.post("/register", shipperController.postAddShipper);
+router.post("/postAddShipper", shipperController.postAddShipper);
 router.get("/shipperid/:shipperId", shipperController.getShipperById);
 router.get("/shippername/:shipperName", shipperController.getShipperByName);
 router.get("/store/:storeId", shipperController.getShipperByStore);
