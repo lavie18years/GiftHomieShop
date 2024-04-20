@@ -91,9 +91,7 @@ exports.buyProduct = async (req, res) => {
 
 exports.payOrder = async (req, res) => {
   // Lấy thông tin đơn hàng từ request body
-  const { user_id, product_id, store_id, quantity, price } = req.body;
-
-  const totalPrice = quantity * price;
+  const { user_id, order_id, totalPrice } = req.body;
 
   try {
     const create_payment_json = {
@@ -102,8 +100,8 @@ exports.payOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/order/responseSucessPayPal",
-        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
+        return_url: "http://192.168.2.4:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.2.4:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
       },
       transactions: [
         {
@@ -111,7 +109,7 @@ exports.payOrder = async (req, res) => {
             items: [
               {
                 name: `Order of ${user_id}`,
-                sku: newOrder.order_id,
+                sku: order_id,
                 price: totalPrice.toString(),
                 currency: "USD",
                 quantity: 1,
@@ -167,9 +165,9 @@ exports.responseSucessPayPal = async (req, res) => {
           return res.status(500).json({ error: "Error processing payment" });
         } else {
           const orderID = payment.transactions[0].item_list.items[0].sku;
-
+          
           const order = await Order.findOneAndUpdate(
-            { order_id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
+            { _id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
             { status: "true" }, // Cập nhật trạng thái đơn hàng thành completed
             { new: true } // Trả về đối tượng đã được cập nhật
           );
