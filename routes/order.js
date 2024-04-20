@@ -33,4 +33,16 @@ router.get(
   orderController.getListOrder
 );
 
+router.put(
+  "/updateOrder/:orderId",
+  //   authenticateJWT,
+  orderController.updateOrder
+);
+
+router.delete(
+  "/deleteOrder/:orderId",
+  //   authenticateJWT,
+  orderController.deleteOrder
+);
+
 module.exports = router;

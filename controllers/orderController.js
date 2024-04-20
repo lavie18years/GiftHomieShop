@@ -36,9 +36,9 @@ exports.buyProduct = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/order/responseSucessPayPal",
-        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
-      },
+        return_url: "http://localhost:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://localhost:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+      }, 
       transactions: [
         {
           item_list: {
@@ -164,7 +164,7 @@ exports.responseSucessPayPal = async (req, res) => {
           return res.status(500).json({ error: "Error processing payment" });
         } else {
           const orderID = payment.transactions[0].item_list.items[0].sku;
-          
+
           const order = await Order.findOneAndUpdate(
             { _id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
             { status: "true" }, // Cập nhật trạng thái đơn hàng thành completed
@@ -244,5 +244,46 @@ exports.getListOrder = async (req, res) => {
     res
       .status(500)
       .json({ message: "Lỗi khi lấy danh sách đơn hàng", error: error });
+  }
+};
+
+exports.updateOrder = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const { quantity, price } = req.body;
+
+    // Find the order by orderId
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update quantity, totalPrice, and updateTime
+    order.quantity = quantity;
+    order.totalPrice = quantity * price;
+    order.updateTime = new Date();
+    await order.save();
+
+    res.json({ message: "Order quantity updated successfully", order });
+  } catch (error) {
+    console.error("Error updating order quantity:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+
+    // Find the order by orderId and delete it
+    const deletedOrder = await Order.findByIdAndDelete(orderId);
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ message: "Order deleted successfully", deletedOrder });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
