@@ -94,6 +94,7 @@ exports.getListStoreHaveProduct = async (req, res) => {
       const storeInfo = await Store.findById(productStore.store_id);
       if (storeInfo) {
         storesInfo.push({
+          storeId: storeInfo._id,
           storeName: storeInfo.storeName,
           phone: storeInfo.phone,
           location: storeInfo.location,

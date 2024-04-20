@@ -10,9 +10,11 @@ paypal.configure({
     "EMiBTFeAPOxhb4jy-1NtHRhlQkGu-D-CajreZmFCFk7n5xi2xO0uWC6l7fiqd5aLTYFhfYrtblvLkaSF",
 });
 
-exports.createOrder = async (req, res) => {
+exports.buyProduct = async (req, res) => {
   // Lấy thông tin đơn hàng từ request body
-  const { user_id, product_id, store_id, quantity, totalPrice } = req.body;
+  const { user_id, product_id, store_id, quantity, price } = req.body;
+
+  const totalPrice = quantity * price;
 
   // Tạo một đơn hàng mới trong cơ sở dữ liệu
   const newOrder = new Order({
@@ -28,6 +30,71 @@ exports.createOrder = async (req, res) => {
     // Lưu đơn hàng vào cơ sở dữ liệu
     const savedOrder = await newOrder.save();
 
+    const create_payment_json = {
+      intent: "sale",
+      payer: {
+        payment_method: "paypal",
+      },
+      redirect_urls: {
+        return_url: "http://localhost:3000/order/responseSucessPayPal",
+        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
+      },
+      transactions: [
+        {
+          item_list: {
+            items: [
+              {
+                name: `Order of ${user_id}`,
+                sku: newOrder.order_id,
+                price: totalPrice.toString(),
+                currency: "USD",
+                quantity: 1,
+              },
+            ],
+          },
+          amount: {
+            currency: "USD",
+            total: totalPrice.toString(),
+          },
+          description: "Payment for order",
+        },
+      ],
+    };
+    // paypal.payment.create(create_payment_json, function (error, payment) {
+    //   if (error) {
+    //     throw error;
+    //   } else {
+    //     for (let i = 0; i < payment.links.length; i++) {
+    //       if (payment.links[i].rel === "approval_url") {
+    //         res.redirect(payment.links[i].href);
+    //       }
+    //     }
+    //   }
+    // });
+    paypal.payment.create(create_payment_json, function (error, payment) {
+      if (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to create PayPal payment" });
+      } else {
+        const approvalUrl = payment.links.find(
+          (link) => link.rel === "approval_url"
+        ).href;
+        res.json({ url: approvalUrl });
+      }
+    });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.payOrder = async (req, res) => {
+  // Lấy thông tin đơn hàng từ request body
+  const { user_id, product_id, store_id, quantity, price } = req.body;
+
+  const totalPrice = quantity * price;
+
+  try {
     const create_payment_json = {
       intent: "sale",
       payer: {
@@ -130,7 +197,9 @@ exports.responseCancelPayPal = (req, res) => {
 exports.addToCart = async (req, res) => {
   try {
     // Giả sử bạn nhận được dữ liệu từ client gửi lên, chẳng hạn như user_id, product_id, store_id và quantity
-    const { user_id, product_id, store_id, quantity, totalPrice } = req.body;
+    const { user_id, product_id, store_id, quantity, price } = req.body;
+
+    const totalPrice = quantity * price;
 
     // Tạo một đối tượng Order mới
     const newOrder = new Order({
