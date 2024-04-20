@@ -36,9 +36,9 @@ exports.buyProduct = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
-        cancel_url: "http://localhost:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
-      }, 
+        return_url: "http://192.168.1.124:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.1.124:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+      },
       transactions: [
         {
           item_list: {
@@ -99,8 +99,8 @@ exports.payOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://192.168.2.4:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
-        cancel_url: "http://192.168.2.4:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        return_url: "http://192.168.1.124:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.1.124:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
       },
       transactions: [
         {
