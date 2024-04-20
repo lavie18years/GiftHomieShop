@@ -36,9 +36,9 @@ exports.buyProduct = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/order/responseSucessPayPal",
-        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
-      },
+        return_url: "http://localhost:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://localhost:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+      }, 
       transactions: [
         {
           item_list: {
@@ -90,9 +90,7 @@ exports.buyProduct = async (req, res) => {
 
 exports.payOrder = async (req, res) => {
   // Lấy thông tin đơn hàng từ request body
-  const { user_id, product_id, store_id, quantity, price } = req.body;
-
-  const totalPrice = quantity * price;
+  const { user_id, order_id, totalPrice } = req.body;
 
   try {
     const create_payment_json = {
@@ -101,8 +99,8 @@ exports.payOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/order/responseSucessPayPal",
-        cancel_url: "http://localhost:3000/order/responseCancelPayPal",
+        return_url: "http://192.168.2.4:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.2.4:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
       },
       transactions: [
         {
@@ -110,7 +108,7 @@ exports.payOrder = async (req, res) => {
             items: [
               {
                 name: `Order of ${user_id}`,
-                sku: newOrder.order_id,
+                sku: order_id,
                 price: totalPrice.toString(),
                 currency: "USD",
                 quantity: 1,
@@ -168,7 +166,7 @@ exports.responseSucessPayPal = async (req, res) => {
           const orderID = payment.transactions[0].item_list.items[0].sku;
 
           const order = await Order.findOneAndUpdate(
-            { order_id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
+            { _id: orderID, status: "false" }, // Tìm đơn hàng với order_id và status chưa được xác nhận
             { status: "true" }, // Cập nhật trạng thái đơn hàng thành completed
             { new: true } // Trả về đối tượng đã được cập nhật
           );
@@ -246,5 +244,46 @@ exports.getListOrder = async (req, res) => {
     res
       .status(500)
       .json({ message: "Lỗi khi lấy danh sách đơn hàng", error: error });
+  }
+};
+
+exports.updateOrder = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const { quantity, price } = req.body;
+
+    // Find the order by orderId
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update quantity, totalPrice, and updateTime
+    order.quantity = quantity;
+    order.totalPrice = quantity * price;
+    order.updateTime = new Date();
+    await order.save();
+
+    res.json({ message: "Order quantity updated successfully", order });
+  } catch (error) {
+    console.error("Error updating order quantity:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+
+    // Find the order by orderId and delete it
+    const deletedOrder = await Order.findByIdAndDelete(orderId);
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ message: "Order deleted successfully", deletedOrder });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
