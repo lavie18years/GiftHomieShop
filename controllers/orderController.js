@@ -177,8 +177,23 @@ exports.responseSucessPayPal = async (req, res) => {
           if (!order) {
             return res.status(404).json({ error: "Order not found" });
           } else {
-            // Nếu đơn hàng được tìm thấy và cập nhật thành công, chuyển hướng hoặc trả về thông báo thành công
-            // res.redirect('/thank-you');
+            // Nếu đơn hàng được tìm thấy và cập nhật thành công, giảm số lượng sản phẩm trong kho hàng
+            const productInStore = await ProductInStore.findOne({
+              product_id: order.product_id,
+              store_id: order.store_id,
+            });
+
+            if (!productInStore) {
+              return res
+                .status(404)
+                .json({ error: "Product not found in store" });
+            }
+
+            // Giảm số lượng của sản phẩm trong kho hàng
+            productInStore.quantity -= order.quantity;
+            await productInStore.save();
+
+            // Trả về thông báo thành công
             return res.status(200).send("Payment successful!");
           }
         }
