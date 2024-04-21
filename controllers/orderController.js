@@ -340,16 +340,14 @@ exports.getHistory = async (req, res) => {
       orders.map(async (order) => {
         // Tìm thông tin vận chuyển của đơn hàng
         const deliveryInfo = await Delivery.findOne({ order_id: order._id });
-        if (!deliveryInfo) {
-          throw new Error("Không tìm thấy thông tin vận chuyển");
-        }
-
+        // if (!deliveryInfo) {
+        //   throw new Error("Không tìm thấy thông tin vận chuyển");
+        // }
         // Tìm thông tin người giao hàng
         const shipperInfo = await Shipper.findById(deliveryInfo.shipper_id);
-        if (!shipperInfo) {
-          throw new Error("Không tìm thấy thông tin người giao hàng");
-        }
-
+        // if (!shipperInfo) {
+        //   throw new Error("Không tìm thấy thông tin người giao hàng");
+        // }
         return {
           order: order,
           delivery: deliveryInfo,
