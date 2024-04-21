@@ -31,13 +31,13 @@ router.get(
 
 router.put(
   "/updateOrder/:orderId",
-  //   authenticateJWT,
+  authenticateJWT,
   orderController.updateOrder
 );
 
 router.delete(
   "/deleteOrder/:orderId",
-  //   authenticateJWT,
+  authenticateJWT,
   orderController.deleteOrder
 );
 
