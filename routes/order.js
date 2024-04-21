@@ -5,23 +5,19 @@ const orderController = require("../controllers/orderController");
 const router = express.Router();
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-router.post("/buyProduct", 
-// authenticateJWT,
- orderController.buyProduct);
+router.post("/buyProduct", authenticateJWT, orderController.buyProduct);
 
-router.post("/payOrder", 
-// authenticateJWT, 
-orderController.payOrder);
+router.post("/payOrder", authenticateJWT, orderController.payOrder);
 
 router.get(
   "/responseSucessPayPal",
-  // authenticateJWT,
+  authenticateJWT,
   orderController.responseSucessPayPal
 );
 
 router.get(
   "/responseCancelPayPal",
-  // authenticateJWT,
+  authenticateJWT,
   orderController.responseCancelPayPal
 );
 
@@ -35,20 +31,16 @@ router.get(
 
 router.put(
   "/updateOrder/:orderId",
-  //   authenticateJWT,
+  authenticateJWT,
   orderController.updateOrder
 );
 
 router.delete(
   "/deleteOrder/:orderId",
-  //   authenticateJWT,
+  authenticateJWT,
   orderController.deleteOrder
 );
 
-router.get(
-  "/getHistory/:userId",
-  // authenticateJWT,
-  orderController.getHistory
-);
+router.get("/getHistory/:userId", authenticateJWT, orderController.getHistory);
 
 module.exports = router;
