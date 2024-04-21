@@ -78,3 +78,23 @@ exports.getProductByCategoryId = (req, res, next) => {
     .catch((err) => next(err));
 };
 
+exports.searchProductByName = async (req, res) => {
+  try {
+    // Lấy productName từ query parameter
+    const productName = req.params.productName;
+
+    // Tạo điều kiện tìm kiếm dựa trên productName
+    const regex = new RegExp(productName, "i"); // 'i' là không phân biệt chữ hoa chữ thường
+    const query = { productName: { $regex: regex } };
+
+    // Tìm các sản phẩm phù hợp với điều kiện tìm kiếm
+    const products = await Product.find(query);
+    console.log(products);
+    // Trả về danh sách sản phẩm tìm được
+    res.json({ success: true, products: products });
+  } catch (error) {
+    // Xử lý lỗi nếu có
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

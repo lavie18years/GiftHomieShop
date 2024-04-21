@@ -11,13 +11,13 @@ router.post("/payOrder", authenticateJWT, orderController.payOrder);
 
 router.get(
   "/responseSucessPayPal",
-  authenticateJWT,
+  // authenticateJWT,
   orderController.responseSucessPayPal
 );
 
 router.get(
   "/responseCancelPayPal",
-  authenticateJWT,
+  // authenticateJWT,
   orderController.responseCancelPayPal
 );
 

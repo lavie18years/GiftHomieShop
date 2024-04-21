@@ -51,4 +51,10 @@ router.get(
   productController.getProductByCategoryId
 );
 
+router.get(
+  "/searchProductByName/:productName",
+  //   authenticateJWT,
+  productController.searchProductByName
+);
+
 module.exports = router;
