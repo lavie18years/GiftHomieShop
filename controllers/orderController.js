@@ -39,8 +39,8 @@ exports.buyProduct = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://192.168.1.124:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
-        cancel_url: "http://192.168.1.124:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        return_url: "http://192.168.2.4:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.2.4:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
       },
       transactions: [
         {
@@ -102,8 +102,8 @@ exports.payOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://192.168.1.124:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
-        cancel_url: "http://192.168.1.124:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        return_url: "http://192.168.2.4:3000/order/responseSucessPayPal", // nhớ sữa lại url cho đồng bộ với mobile
+        cancel_url: "http://192.168.2.4:3000/order/responseCancelPayPal", // nhớ sữa lại url cho đồng bộ với mobile
       },
       transactions: [
         {
@@ -333,21 +333,32 @@ exports.getHistory = async (req, res) => {
     const userId = req.params.userId;
 
     // Tìm các đơn hàng của userId với status là true
-    const orders = await Order.find({ user_id: userId, status: true });
+    const orders = await Order.find({ user_id: userId, status: true }).populate(
+      "product_id store_id"
+    );
 
     // Lặp qua từng đơn hàng và lấy thông tin vận chuyển và người giao hàng
     const ordersWithDeliveryInfo = await Promise.all(
       orders.map(async (order) => {
         // Tìm thông tin vận chuyển của đơn hàng
         const deliveryInfo = await Delivery.findOne({ order_id: order._id });
-        // if (!deliveryInfo) {
-        //   throw new Error("Không tìm thấy thông tin vận chuyển");
-        // }
-        // Tìm thông tin người giao hàng
+
+        // Kiểm tra nếu không tìm thấy thông tin vận chuyển
+        if (!deliveryInfo) {
+          return {
+            order: order,
+            message: "Đơn hàng đang chờ xác nhận",
+          };
+        }
+
+        // Nếu tìm thấy thông tin vận chuyển, tiếp tục tìm thông tin người giao hàng
         const shipperInfo = await Shipper.findById(deliveryInfo.shipper_id);
-        // if (!shipperInfo) {
-        //   throw new Error("Không tìm thấy thông tin người giao hàng");
-        // }
+
+        // Kiểm tra xem shipperInfo có tồn tại không
+        if (!shipperInfo) {
+          throw new Error("Không tìm thấy thông tin người giao hàng");
+        }
+
         return {
           order: order,
           delivery: deliveryInfo,

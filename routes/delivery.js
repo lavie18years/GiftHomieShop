@@ -5,7 +5,7 @@ const { verifyToken } = require("../authenticate");
 const deliveryController = require("../controllers/deliveryController");
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-router.post("/create", deliveryController.postAddDelivery);
+router.post("/postAddDelivery", deliveryController.postAddDelivery);
 router.get("/", deliveryController.getAllDelivery);
 router.get("/:deliveryId", deliveryController.getDeliveryById);
 router.get("/shipper/:shipperId", deliveryController.getDeliveryByShipperId);
