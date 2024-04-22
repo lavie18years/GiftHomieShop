@@ -51,22 +51,22 @@ exports.getAllProduct = async (req, res, next) => {
     // Tạo một mảng chứa ID của tất cả các sản phẩm
     const productIds = products.map((product) => product._id);
 
-    // Tính toán rating trung bình cho mỗi sản phẩm
-    const averageRatings = await Feedback.aggregate([
+    // Tính toán rating trung bình và số lượng đánh giá cho mỗi sản phẩm
+    const ratingAggregation = await Feedback.aggregate([
       { $match: { product_id: { $in: productIds } } }, // Lọc các đánh giá của các sản phẩm trong productIds
-      { $group: { _id: "$product_id", avgRating: { $avg: "$rating" } } }, // Tính trung bình rating cho mỗi sản phẩm
+      { $group: { _id: "$product_id", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } }, // Tính trung bình rating và số lượng đánh giá cho mỗi sản phẩm
     ]);
 
-    // Tạo một đối tượng Map để lưu trữ số rating trung bình theo ID của sản phẩm
-    const averageRatingMap = new Map();
-    averageRatings.forEach((rating) => {
-      averageRatingMap.set(rating._id.toString(), rating.avgRating); // Chuyển đổi _id thành chuỗi trước khi lưu vào Map
+    // Tạo một đối tượng Map để lưu trữ số rating trung bình và số lượng đánh giá theo ID của sản phẩm
+    const ratingMap = new Map();
+    ratingAggregation.forEach((rating) => {
+      ratingMap.set(rating._id.toString(), { avgRating: rating.avgRating, count: rating.count });
     });
 
-    // Thêm số rating trung bình vào mỗi sản phẩm và gán 0 nếu sản phẩm không có rating
+    // Thêm số rating trung bình và số lượng đánh giá vào mỗi sản phẩm và gán 0 nếu sản phẩm không có rating
     const productsWithRating = products.map((product) => {
-      const avgRating = averageRatingMap.get(product._id.toString()) || 0; // Chuyển đổi _id thành chuỗi trước khi lấy giá trị từ Map
-      return { ...product.toObject(), avgRating };
+      const ratingData = ratingMap.get(product._id.toString()) || { avgRating: 0, count: 0 }; // Chuyển đổi _id thành chuỗi trước khi lấy giá trị từ Map
+      return { ...product.toObject(), avgRating: ratingData.avgRating, reviewCount: ratingData.count };
     });
 
     res.statusCode = 200;
@@ -78,6 +78,7 @@ exports.getAllProduct = async (req, res, next) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 exports.getProductById = (req, res, next) => {
   Product.findById(req.params.productId)
