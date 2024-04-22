@@ -147,16 +147,6 @@ exports.postLoginUser = async (req, res, next) => {
 
 exports.postAddUser = async (req, res, next) => {
   try {
-    // Check if there is an image file uploaded
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No image uploaded." });
-    }
-
-    // Get the Cloudinary image URL
-    const imageUrl = req.file.path;
-
     // Check if username already exists
     const existingUsername = await User.findOne({
       username: req.body.username,
@@ -195,7 +185,6 @@ exports.postAddUser = async (req, res, next) => {
       username: req.body.username,
       password: hashedPassword,
       email: req.body.email,
-      image: imageUrl,
       gender: req.body.gender,
       address: req.body.address,
       fullName: req.body.fullName,
