@@ -372,3 +372,111 @@ exports.getHistory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getWaitingAcceptOrder = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Tìm các delivery của user với userId đã cho và có status là "Vận chuyển thành công"
+    const deliveries = await Delivery.find({
+      status: "Chờ xác nhận",
+    }).populate({
+      path: "order_id",
+      match: { user_id: userId },
+      select: "_id",
+    });
+
+    // Lấy ra các orderId từ danh sách deliveries
+    const orderIds = deliveries.map((delivery) => delivery.order_id._id);
+
+    // Tìm các đơn hàng có orderId trong danh sách orderIds
+    const successfulDeliveries = await Order.find({
+      _id: { $in: orderIds },
+    });
+
+    res.json(successfulDeliveries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getWaitingDeliveryOrder = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Tìm các delivery của user với userId đã cho và có status là "Vận chuyển thành công"
+    const deliveries = await Delivery.find({
+      status: "Chờ giao hàng",
+    }).populate({
+      path: "order_id",
+      match: { user_id: userId },
+      select: "_id",
+    });
+
+    // Lấy ra các orderId từ danh sách deliveries
+    const orderIds = deliveries.map((delivery) => delivery.order_id._id);
+
+    // Tìm các đơn hàng có orderId trong danh sách orderIds
+    const successfulDeliveries = await Order.find({
+      _id: { $in: orderIds },
+    });
+
+    res.json(successfulDeliveries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getSuccessDeliveryOrder = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Tìm các delivery của user với userId đã cho và có status là "Vận chuyển thành công"
+    const deliveries = await Delivery.find({
+      status: "Chờ đánh giá",
+    }).populate({
+      path: "order_id",
+      match: { user_id: userId },
+      select: "_id",
+    });
+
+    // Lấy ra các orderId từ danh sách deliveries
+    const orderIds = deliveries.map((delivery) => delivery.order_id._id);
+
+    // Tìm các đơn hàng có orderId trong danh sách orderIds
+    const successfulDeliveries = await Order.find({
+      _id: { $in: orderIds },
+    });
+
+    res.json(successfulDeliveries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAccecptedOrder = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Tìm các delivery của user với userId đã cho và có status là "Vận chuyển thành công"
+    const deliveries = await Delivery.find({
+      status: "Đã đánh giá",
+    }).populate({
+      path: "order_id",
+      match: { user_id: userId },
+      select: "_id",
+    });
+
+    // Lấy ra các orderId từ danh sách deliveries
+    const orderIds = deliveries.map((delivery) => delivery.order_id._id);
+
+    // Tìm các đơn hàng có orderId trong danh sách orderIds
+    const successfulDeliveries = await Order.find({
+      _id: { $in: orderIds },
+    });
+
+    res.json(successfulDeliveries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

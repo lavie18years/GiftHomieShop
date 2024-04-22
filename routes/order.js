@@ -43,4 +43,28 @@ router.delete(
 
 router.get("/getHistory/:userId", authenticateJWT, orderController.getHistory);
 
+router.get(
+  "/getWaitingAcceptOrder/:userId",
+  authenticateJWT,
+  orderController.getWaitingAcceptOrder
+);
+
+router.get(
+  "/getWaitingDeliveryOrder/:userId",
+  authenticateJWT,
+  orderController.getWaitingDeliveryOrder
+);
+
+router.get(
+  "/getSuccessDeliveryOrder/:userId",
+  authenticateJWT,
+  orderController.getSuccessDeliveryOrder
+);
+
+router.get(
+  "/getAccecptedOrder/:userId",
+  authenticateJWT,
+  orderController.getAccecptedOrder
+);
+
 module.exports = router;
