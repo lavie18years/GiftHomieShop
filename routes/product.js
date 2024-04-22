@@ -52,7 +52,7 @@ router.get(
 );
 
 router.get(
-  "/searchProductByName/:productName",
+  "/searchProductByName",
   //   authenticateJWT,
   productController.searchProductByName
 );

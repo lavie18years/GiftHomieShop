@@ -81,8 +81,8 @@ exports.getProductByCategoryId = (req, res, next) => {
 exports.searchProductByName = async (req, res) => {
   try {
     // Lấy productName từ query parameter
-    const productName = req.params.productName;
-    const query = {};
+    const productName = req.query.productName;
+    let query = {};
 
     if (productName) {
       const regex = new RegExp(productName, "i");
