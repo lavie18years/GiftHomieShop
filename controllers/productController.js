@@ -54,19 +54,35 @@ exports.getAllProduct = async (req, res, next) => {
     // Tính toán rating trung bình và số lượng đánh giá cho mỗi sản phẩm
     const ratingAggregation = await Feedback.aggregate([
       { $match: { product_id: { $in: productIds } } }, // Lọc các đánh giá của các sản phẩm trong productIds
-      { $group: { _id: "$product_id", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } }, // Tính trung bình rating và số lượng đánh giá cho mỗi sản phẩm
+      {
+        $group: {
+          _id: "$product_id",
+          avgRating: { $avg: "$rating" },
+          count: { $sum: 1 },
+        },
+      }, // Tính trung bình rating và số lượng đánh giá cho mỗi sản phẩm
     ]);
 
     // Tạo một đối tượng Map để lưu trữ số rating trung bình và số lượng đánh giá theo ID của sản phẩm
     const ratingMap = new Map();
     ratingAggregation.forEach((rating) => {
-      ratingMap.set(rating._id.toString(), { avgRating: rating.avgRating, count: rating.count });
+      ratingMap.set(rating._id.toString(), {
+        avgRating: rating.avgRating,
+        count: rating.count,
+      });
     });
 
     // Thêm số rating trung bình và số lượng đánh giá vào mỗi sản phẩm và gán 0 nếu sản phẩm không có rating
     const productsWithRating = products.map((product) => {
-      const ratingData = ratingMap.get(product._id.toString()) || { avgRating: 0, count: 0 }; // Chuyển đổi _id thành chuỗi trước khi lấy giá trị từ Map
-      return { ...product.toObject(), avgRating: ratingData.avgRating, reviewCount: ratingData.count };
+      const ratingData = ratingMap.get(product._id.toString()) || {
+        avgRating: 0,
+        count: 0,
+      }; // Chuyển đổi _id thành chuỗi trước khi lấy giá trị từ Map
+      return {
+        ...product.toObject(),
+        avgRating: ratingData.avgRating,
+        reviewCount: ratingData.count,
+      };
     });
 
     res.statusCode = 200;
@@ -78,7 +94,6 @@ exports.getAllProduct = async (req, res, next) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
 
 exports.getProductById = (req, res, next) => {
   Product.findById(req.params.productId)
@@ -110,13 +125,15 @@ exports.searchProductByName = async (req, res) => {
   try {
     // Lấy productName từ query parameter
     const productName = req.query.productName;
-    let query = {};
 
-    if (productName) {
-      const regex = new RegExp(productName, "i");
-      query = { productName: { $regex: regex } };
+    if (!productName) {
+      // Nếu không có giá trị productName được truyền, trả về một danh sách sản phẩm rỗng
+      return res.json({ success: true, products: [] });
     }
 
+    // Nếu có giá trị productName được truyền, tiếp tục tìm kiếm sản phẩm theo giá trị đó
+    const regex = new RegExp(productName, "i");
+    const query = { productName: { $regex: regex } };
     const products = await Product.find(query);
 
     res.json({ success: true, products: products });
