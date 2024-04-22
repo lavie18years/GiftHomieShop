@@ -5,8 +5,7 @@ const { verifyToken } = require("../authenticate");
 const userController = require("../controllers/userController");
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-const upload = multer({ storage: storage });
-router.post("/upload", upload.single("image"), userController.uploadImg);
+// router.post("/upload", upload.single("image"), userController.uploadImg);
 router.post("/login", userController.postLoginUser);
 router.post("/register", userController.postAddUser);
 router.get("/fetchMe", verifyToken, userController.fetchMe);
