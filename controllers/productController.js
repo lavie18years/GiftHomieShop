@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Feedback = require("../models/Feedback");
 
 exports.addProduct = async (req, res) => {
   try {
@@ -35,21 +36,47 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-exports.getAllProduct = (req, res, next) => {
-  Product.find({})
-    .then((products) => {
-      if (!products || products.length === 0) {
-        // Nếu không có sản phẩm nào thỏa mãn điều kiện, trả về thông báo hoặc mã lỗi
-        const err = new Error("No active products found.");
-        err.status = 404; // Mã lỗi 404 - Not Found
-        throw err;
-      }
+exports.getAllProduct = async (req, res, next) => {
+  try {
+    // Lấy tất cả sản phẩm
+    const products = await Product.find({});
 
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.json(products);
-    })
-    .catch((err) => next(err));
+    if (!products || products.length === 0) {
+      // Nếu không có sản phẩm nào thỏa mãn điều kiện, trả về thông báo lỗi
+      return res
+        .status(404)
+        .json({ success: false, message: "No active products found." });
+    }
+
+    // Tạo một mảng chứa ID của tất cả các sản phẩm
+    const productIds = products.map((product) => product._id);
+
+    // Tính toán rating trung bình cho mỗi sản phẩm
+    const averageRatings = await Feedback.aggregate([
+      { $match: { product_id: { $in: productIds } } }, // Lọc các đánh giá của các sản phẩm trong productIds
+      { $group: { _id: "$product_id", avgRating: { $avg: "$rating" } } }, // Tính trung bình rating cho mỗi sản phẩm
+    ]);
+
+    // Tạo một đối tượng Map để lưu trữ số rating trung bình theo ID của sản phẩm
+    const averageRatingMap = new Map();
+    averageRatings.forEach((rating) => {
+      averageRatingMap.set(rating._id.toString(), rating.avgRating); // Chuyển đổi _id thành chuỗi trước khi lưu vào Map
+    });
+
+    // Thêm số rating trung bình vào mỗi sản phẩm và gán 0 nếu sản phẩm không có rating
+    const productsWithRating = products.map((product) => {
+      const avgRating = averageRatingMap.get(product._id.toString()) || 0; // Chuyển đổi _id thành chuỗi trước khi lấy giá trị từ Map
+      return { ...product.toObject(), avgRating };
+    });
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.json({ success: true, products: productsWithRating });
+  } catch (err) {
+    // Xử lý lỗi nếu có
+    console.error(err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
 };
 
 exports.getProductById = (req, res, next) => {
