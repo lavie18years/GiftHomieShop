@@ -488,15 +488,32 @@ exports.getAccecptedOrder = async (req, res) => {
 exports.getOrderByOrderId = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const order = await Order.find({ _id: orderId });
+
+    const order = await Order.findById(orderId)
+      .populate("user_id")
+      .populate("product_id")
+      .populate("store_id");
 
     if (!order) {
       return res.json({ message: "Không tìm thấy đơn hàng" });
     }
 
-    res.status(200).json({ order });
+    const delivery = await Delivery.findOne({ order_id: orderId }).populate(
+      "shipper_id"
+    );
+
+    if (!delivery) {
+      return res.json({ message: "Không tìm thấy thông tin vận chuyển" });
+    }
+
+    res.json({
+      order: order,
+      delivery: delivery,
+    });
   } catch (error) {
-    console.error("Lỗi khi lấy đơn hàng:", error);
-    res.status(500).json({ message: "Đã xảy ra lỗi khi lấy đơn hàng" });
+    console.error("Lỗi khi lấy thông tin đơn hàng:", error.message);
+    res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi lấy thông tin đơn hàng" });
   }
 };

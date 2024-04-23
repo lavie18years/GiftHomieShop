@@ -69,7 +69,7 @@ router.get(
 
 router.get(
   "/getOrderByOrderId/:orderId",
-  authenticateJWT,
+  // authenticateJWT,
   orderController.getOrderByOrderId
 );
 
