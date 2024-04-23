@@ -67,4 +67,10 @@ router.get(
   orderController.getAccecptedOrder
 );
 
+router.get(
+  "/getOrderByOrderId/:orderId",
+  authenticateJWT,
+  orderController.getOrderByOrderId
+);
+
 module.exports = router;

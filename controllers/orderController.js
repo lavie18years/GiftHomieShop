@@ -484,3 +484,19 @@ exports.getAccecptedOrder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getOrderByOrderId = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.find({ _id: orderId });
+
+    if (!order) {
+      return res.json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    res.status(200).json({ order });
+  } catch (error) {
+    console.error("Lỗi khi lấy đơn hàng:", error);
+    res.status(500).json({ message: "Đã xảy ra lỗi khi lấy đơn hàng" });
+  }
+};
