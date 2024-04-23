@@ -293,7 +293,7 @@ exports.getListOrder = async (req, res) => {
 exports.updateOrder = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const { quantity, price } = req.body;
+    const { quantity, price, location } = req.body;
 
     // Find the order by orderId
     const order = await Order.findById(orderId);
@@ -304,6 +304,7 @@ exports.updateOrder = async (req, res) => {
     // Update quantity, totalPrice, and updateTime
     order.quantity = quantity;
     order.totalPrice = quantity * price;
+    order.location = location;
     order.updateTime = new Date();
     await order.save();
 
