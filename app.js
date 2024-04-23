@@ -4,6 +4,7 @@ const ejs = require("ejs");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const cors = require("cors");
 
 var indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
@@ -42,7 +43,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(
+  cors({
+    origin: "*", // Hoặc '*' để chấp nhận tất cả các origin
+  })
+);
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/category", categoryRouter);
