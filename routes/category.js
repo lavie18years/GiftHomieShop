@@ -9,4 +9,8 @@ router.post("/addCategory",
 // authenticateJWT, 
 categoryController.addCategory);
 
+router.get("/getCategory", 
+// authenticateJWT, 
+categoryController.getCategory);
+
 module.exports = router;

@@ -48,6 +48,7 @@ app.use(
     origin: "*", // Hoặc '*' để chấp nhận tất cả các origin
   })
 );
+
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/category", categoryRouter);
