@@ -15,7 +15,7 @@ paypal.configure({
 
 exports.buyProduct = async (req, res) => {
   // Lấy thông tin đơn hàng từ request body
-  const { user_id, product_id, store_id, quantity, price } = req.body;
+  const { user_id, product_id, store_id, quantity, price, location } = req.body;
 
   const totalPrice = quantity * price;
 
@@ -26,6 +26,7 @@ exports.buyProduct = async (req, res) => {
     store_id,
     quantity,
     totalPrice,
+    location,
     status: "false", // Set trạng thái đơn hàng là đang chờ
   });
 
@@ -213,7 +214,8 @@ exports.responseCancelPayPal = (req, res) => {
 exports.addToCart = async (req, res) => {
   try {
     // Giả sử bạn nhận được dữ liệu từ client gửi lên, chẳng hạn như user_id, product_id, store_id và quantity
-    const { user_id, product_id, store_id, quantity, price } = req.body;
+    const { user_id, product_id, store_id, quantity, price, location } =
+      req.body;
 
     const totalPrice = quantity * price;
 
@@ -224,6 +226,7 @@ exports.addToCart = async (req, res) => {
       store_id: store_id,
       quantity: quantity,
       totalPrice: totalPrice,
+      location: location,
       status: false, // Trạng thái mặc định là false
     });
 
